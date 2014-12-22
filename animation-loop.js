@@ -118,7 +118,6 @@ AnimationLoop.prototype = {
     },
 
     cycle: function (now) {
-        var animations;
         var startTime, lastTime, runningTime, deltaT, timing;
         var pauseThreshold = this.pauseThreshold;
 
@@ -153,8 +152,7 @@ AnimationLoop.prototype = {
             runningTime: runningTime,
         };
 
-        animations = this.animations.slice();
-        animations.forEach(function (anim) {
+        this.animations.forEach(function (anim) {
             var pct, running;
             var passArgs = [timing];
 
@@ -175,7 +173,7 @@ AnimationLoop.prototype = {
             }
         }, this);
 
-        this.animations = animations.filter(function (anim) {
+        this.animations = this.animations.filter(function (anim) {
             var running = anim.running;
             var passArgs = [timing];
 
