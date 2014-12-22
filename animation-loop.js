@@ -22,6 +22,16 @@
 * SOFTWARE.
 **********************/
 
+(function (name, definition) {
+    if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
+        module.exports = definition();
+    } else if (typeof define === 'function' && typeof define.amd === 'object') {
+        define(definition);
+    } else {
+        this[name] = definition();
+    }
+})('AnimationLoop', function () {
+
 function AnimationLoop (options) {
     this.startTime = null;
     this.animations = this.constructor.createAnimationArray(options);
@@ -174,3 +184,7 @@ AnimationLoop.prototype = {
         this.rafId = this.constructor.raf(this.cycle.bind(this));
     },
 };
+
+return AnimationLoop;
+
+});
