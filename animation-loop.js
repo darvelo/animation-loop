@@ -153,7 +153,7 @@ AnimationLoop.prototype = {
         };
 
         this.animations.forEach(function (anim) {
-            var pct, running;
+            var pct, state;
             var passArgs = [timing];
 
             if (anim.duration) {
@@ -164,44 +164,53 @@ AnimationLoop.prototype = {
             }
 
             if (typeof anim.before === 'function') {
-                running = anim.before.apply(null, passArgs);
+                state = anim.before.apply(null, passArgs);
             }
 
-            // only allow `false` or 'cancel'
-            if (running === false || running === 'cancel') {
-                anim.running = running;
+            if (state === false) {
+                anim.running = false;
+            }
+
+            if (state === 'cancel') {
+                anim.cancel = true;
             }
         }, this);
 
         this.animations = this.animations.filter(function (anim) {
-            var running = anim.running;
+            var running = anim.running !== false;
+            var cancel  = anim.cancel === true;
             var passArgs = [timing];
+            var state;
 
             if (anim.duration) {
                 passArgs.push({ pct: anim.pct, lastPct: anim.lastPct });
             }
 
             // only render if anim.before() didn't return `false` or 'cancel'
-            if (running !== false && running !== 'cancel') {
-                running = anim.render.apply(null, passArgs);
+            if (running && !cancel) {
+                state = anim.render.apply(null, passArgs);
             }
 
             // if animation running time is 100% of its duration, don't queue it up again
-            if (running !== false && running !== 'cancel' && anim.pct === 1) {
-                running = false;
+            if (state === false || anim.pct === 1) {
+                running = anim.running = false;
+                this.remaining--;
+
+                if (typeof anim.done === 'function') {
+                    anim.done.apply(null, passArgs);
+                }
             }
 
-            // anim.done() is run only if the animation is not canceled
-            switch (running) {
-            case false:
-                (typeof anim.done === 'function') && anim.done.apply(null, passArgs);
-            // fall through to 'cancel' case
-            case 'cancel':
+            if (state === 'cancel') {
+                cancel = anim.cancel = true;
                 this.remaining--;
-                return false;
-            default:
-                return true;
             }
+
+            if (running === false || cancel) {
+                return false;
+            }
+
+            return true;
         }, this);
     },
 };
