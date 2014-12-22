@@ -107,29 +107,23 @@ AnimationLoop.prototype = {
 
     cycle: function (now) {
         var animations = this.animations.slice();
-        var startTime, lastTime;
+        var startTime, lastTime, deltaT, timing;
 
         if (!animations.length) {
             this.complete = true;
             return;
         }
 
-        if (!this.startTime) {
-            this.startTime = startTime = now;
-        }
+        startTime = this.startTime = this.startTime || now;
+        lastTime = this.lastTime = this.lastTime || now;
+        deltaT = now - lastTime;
 
-        if (!this.lastTime) {
-            this.lastTime = now;
-        }
-
-        lastTime = this.lastTime;
-
-        var timing = {
+        timing = {
+            now: now,
+            deltaT: deltaT,
             startTime: startTime,
             lastTime: lastTime,
             animTime: lastTime - startTime,
-            now: now,
-            deltaT: now - lastTime,
         };
 
         animations.forEach(function (anim) {
