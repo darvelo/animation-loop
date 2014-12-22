@@ -211,19 +211,19 @@ AnimationLoop.prototype = {
                 state = anim.render.apply(null, passArgs);
             }
 
+            if (state === 'cancel') {
+                cancel = anim.cancel = true;
+                this.remaining--;
+            }
+
             // if animation running time is 100% of its duration, don't queue it up again
-            if (state === false || anim.pct === 1) {
+            if (!cancel && (state === false || anim.pct === 1)) {
                 running = anim.running = false;
                 this.remaining--;
 
                 if (typeof anim.done === 'function') {
                     anim.done.apply(null, passArgs);
                 }
-            }
-
-            if (state === 'cancel') {
-                cancel = anim.cancel = true;
-                this.remaining--;
             }
 
             if (this.remaining === 0 && typeof this.oncomplete === 'function') {
