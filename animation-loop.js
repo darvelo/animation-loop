@@ -122,7 +122,6 @@ AnimationLoop.prototype = {
         var pauseThreshold = this.pauseThreshold;
 
         if (!this.animations.length) {
-            this.complete = true;
             return;
         }
 
@@ -204,6 +203,11 @@ AnimationLoop.prototype = {
             if (state === 'cancel') {
                 cancel = anim.cancel = true;
                 this.remaining--;
+            }
+
+            if (this.remaining === 0 && typeof this.oncomplete === 'function') {
+                this.complete = true;
+                this.oncomplete();
             }
 
             if (running === false || cancel) {
