@@ -141,26 +141,23 @@ AnimationLoop.prototype = {
             deltaT: deltaT,
             startTime: startTime,
             lastTime: lastTime,
-            animTime: lastTime - startTime,
+            runningTime: lastTime - startTime,
         };
 
         animations = this.animations.slice();
         animations.forEach(function (anim) {
             var pct, running;
+            var passArgs = [timing];
 
             if (anim.duration) {
-                timing.duration = anim.duration;
-                pct = Math.max(0, Math.min(1, timing.animTime / timing.duration));
-                anim.pct = timing.pct = pct;
-                anim.lastPct = timing.lastPct = timing.lastPct || pct;
-            } else {
-                timing.duration = null;
-                timing.pct = null;
-                timing.lastPct = null;
+                pct = Math.max(0, Math.min(1, timing.runningTime / anim.duration));
+                anim.lastPct = anim.pct || pct;
+                anim.pct = pct;
+                passArgs.push({ pct: pct, lastPct: anim.lastPct });
             }
 
             if (typeof anim.before === 'function') {
-                running = anim.before(timing);
+                running = anim.before.apply(null, passArgs);
             }
 
             // only allow `false` or 'cancel'
@@ -170,17 +167,16 @@ AnimationLoop.prototype = {
         }, this);
 
         this.animations = animations.filter(function (anim) {
-            var pct = anim.pct;
             var running = anim.running;
+            var passArgs = [timing];
 
-            timing.duration = anim.duration;
-            // these should be set on anim by now if anim.duration exists
-            timing.pct = pct;
-            timing.lastPct = anim.lastPct;
+            if (anim.duration) {
+                passArgs.push({ pct: anim.pct, lastPct: anim.lastPct });
+            }
 
             // only render if anim.before() didn't return `false` or 'cancel'
             if (running !== false && running !== 'cancel') {
-                running = anim.render(timing);
+                running = anim.render.apply(null, passArgs);
             }
 
             // if animation running time is 100% of its duration, don't queue it up again
@@ -191,7 +187,7 @@ AnimationLoop.prototype = {
             // anim.done() is run only if the animation is not canceled
             switch (running) {
             case false:
-                (typeof anim.done === 'function') && anim.done(timing);
+                (typeof anim.done === 'function') && anim.done.apply(null, passArgs);
             // fall through to 'cancel' case
             case 'cancel':
                 this.remaining--;
