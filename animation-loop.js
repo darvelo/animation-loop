@@ -118,6 +118,8 @@ AnimationLoop.prototype = {
         lastTime = this.lastTime = this.lastTime || now;
         deltaT = now - lastTime;
 
+        this.lastTime = now;
+
         timing = {
             now: now,
             deltaT: deltaT,
