@@ -146,7 +146,7 @@ AnimationLoop.prototype = {
 
         animations = this.animations.slice();
         animations.forEach(function (anim) {
-            var pct;
+            var pct, running;
 
             if (anim.duration) {
                 timing.duration = anim.duration;
@@ -160,38 +160,45 @@ AnimationLoop.prototype = {
             }
 
             if (typeof anim.before === 'function') {
-                anim.running = anim.before(timing);
+                running = anim.before(timing);
+            }
+
+            // only allow `false` or 'cancel'
+            if (running === false || running === 'cancel') {
+                anim.running = running;
             }
         }, this);
 
         this.animations = animations.filter(function (anim) {
             var pct = anim.pct;
-
-            if (anim.running === false) {
-                this.remaining--;
-                return false;
-            }
+            var running = anim.running;
 
             timing.duration = anim.duration;
             // these should be set on anim by now if anim.duration exists
             timing.pct = pct;
             timing.lastPct = anim.lastPct;
 
-            var running = anim.render(timing);
-
-            if (running === false || anim.pct === 1) {
-                if (typeof anim.done === 'function') {
-                    anim.done();
-                }
-
-                this.remaining--;
-                return false;
-            } else if (running === 'cancel') {
-                this.remaining--;
-                return false;
+            // only render if anim.before() didn't return `false` or 'cancel'
+            if (running !== false && running !== 'cancel') {
+                running = anim.render(timing);
             }
 
-            return true;
+            // if animation running time is 100% of its duration, don't queue it up again
+            if (running !== false && running !== 'cancel' && anim.pct === 1) {
+                running = false;
+            }
+
+            // anim.done() is run only if the animation is not canceled
+            switch (running) {
+            case false:
+                (typeof anim.done === 'function') && anim.done(timing);
+            // fall through to 'cancel' case
+            case 'cancel':
+                this.remaining--;
+                return false;
+            default:
+                return true;
+            }
         }, this);
     },
 };
