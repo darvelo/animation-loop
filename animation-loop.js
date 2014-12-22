@@ -46,6 +46,7 @@ var validOptions = [
     'before',
     'render',
     'done',
+    'args',
     'pauseThreshold',
     'duration',
 ];
@@ -183,6 +184,10 @@ AnimationLoop.prototype = {
                 passArgs.push({ now: pct, last: anim.lastPct });
             }
 
+            if (Array.isArray(anim.args)) {
+                passArgs = passArgs.concat(anim.args);
+            }
+
             if (typeof anim.before === 'function') {
                 state = anim.before.apply(null, passArgs);
             }
@@ -204,6 +209,10 @@ AnimationLoop.prototype = {
 
             if (anim.duration) {
                 passArgs.push({ now: anim.pct, last: anim.lastPct });
+            }
+
+            if (Array.isArray(anim.args)) {
+                passArgs = passArgs.concat(anim.args);
             }
 
             // only render if anim.before() didn't return `false` or 'cancel'
