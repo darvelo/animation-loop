@@ -117,7 +117,7 @@ AnimationLoop.prototype = {
 
     cycle: function (now) {
         var animations;
-        var startTime, lastTime, deltaT, timing;
+        var startTime, lastTime, runningTime, deltaT, timing;
         var pauseThreshold = this.pauseThreshold;
 
         if (!this.animations.length) {
@@ -127,6 +127,7 @@ AnimationLoop.prototype = {
 
         startTime = this.startTime = this.startTime || now;
         lastTime = this.lastTime = this.lastTime || now;
+        runningTime = this.runningTime || now - startTime;
         deltaT = now - lastTime;
 
         this.lastTime = now;
@@ -136,12 +137,18 @@ AnimationLoop.prototype = {
             return;
         }
 
+        // runningTime only updates when the time between
+        // frames is short enough, as defined by the user.
+        // the gap can be wide if the tab becomes inactive, etc.
+        // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
+        this.runningTime = (runningTime += deltaT);
+
         timing = {
             now: now,
             deltaT: deltaT,
             startTime: startTime,
             lastTime: lastTime,
-            runningTime: lastTime - startTime,
+            runningTime: runningTime,
         };
 
         animations = this.animations.slice();
@@ -150,7 +157,7 @@ AnimationLoop.prototype = {
             var passArgs = [timing];
 
             if (anim.duration) {
-                pct = Math.max(0, Math.min(1, timing.runningTime / anim.duration));
+                pct = Math.max(0, Math.min(1, runningTime / anim.duration));
                 anim.lastPct = anim.pct || pct;
                 anim.pct = pct;
                 passArgs.push({ pct: pct, lastPct: anim.lastPct });
