@@ -33,6 +33,10 @@
 })('AnimationLoop', function () {
 
 function AnimationLoop (options) {
+    if (!(this instanceof AnimationLoop)) {
+        return new AnimationLoop(options);
+    }
+
     checkOptions(options);
 
     this.animations = createAnimationArray(options);
