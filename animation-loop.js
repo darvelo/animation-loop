@@ -79,37 +79,29 @@ function createAnimationArray (options) {
     }
 }
 
-AnimationLoop.raf = (function() {
-    var raf = window.requestAnimationFrame ||
-              window.webkitRequestAnimationFrame ||
-              window.mozRequestAnimationFrame;
-
-    return function (callback) {
-      return raf(callback);
-    };
+var raf = (function() {
+    return window.requestAnimationFrame ||
+           window.webkitRequestAnimationFrame ||
+           window.mozRequestAnimationFrame;
 })();
 
-AnimationLoop.caf = (function() {
-    var caf = window.cancelAnimationFrame ||
-              window.cancelRequestAnimationFrame ||
-              window.webkitCancelRequestAnimationFrame ||
-              window.mozCancelRequestAnimationFrame;
-
-    return function (id) {
-      return caf(id);
-    };
+var caf = (function() {
+    return window.cancelAnimationFrame ||
+           window.cancelRequestAnimationFrame ||
+           window.webkitCancelRequestAnimationFrame ||
+           window.mozCancelRequestAnimationFrame;
 })();
 
 AnimationLoop.prototype = {
     constructor: AnimationLoop,
 
     start: function () {
-        this.rafId = this.constructor.raf(this.cycle.bind(this));
+        this.rafId = raf(this.cycle.bind(this));
         return this;
     },
 
     cancel: function () {
-        this.constructor.caf(this.rafId);
+        caf(this.rafId);
         return this;
     },
 
@@ -189,7 +181,7 @@ AnimationLoop.prototype = {
             return true;
         }, this);
 
-        this.rafId = this.constructor.raf(this.cycle.bind(this));
+        this.rafId = raf(this.cycle.bind(this));
     },
 };
 
