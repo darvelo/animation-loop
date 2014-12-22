@@ -106,10 +106,11 @@ AnimationLoop.prototype = {
     },
 
     cycle: function (now) {
-        var animations = this.animations.slice();
+        var animations;
         var startTime, lastTime, deltaT, timing;
+        var pauseThreshold = this.pauseThreshold;
 
-        if (!animations.length) {
+        if (!this.animations.length) {
             this.complete = true;
             return;
         }
@@ -119,6 +120,11 @@ AnimationLoop.prototype = {
         deltaT = now - lastTime;
 
         this.lastTime = now;
+        this.rafId = raf(this.cycle.bind(this));
+
+        if (pauseThreshold && deltaT >= pauseThreshold) {
+            return;
+        }
 
         timing = {
             now: now,
@@ -128,6 +134,7 @@ AnimationLoop.prototype = {
             animTime: lastTime - startTime,
         };
 
+        animations = this.animations.slice();
         animations.forEach(function (anim) {
             var pct;
 
@@ -176,8 +183,6 @@ AnimationLoop.prototype = {
 
             return true;
         }, this);
-
-        this.rafId = raf(this.cycle.bind(this));
     },
 };
 
