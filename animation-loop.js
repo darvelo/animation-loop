@@ -33,13 +33,19 @@
 })('AnimationLoop', function () {
 
 function AnimationLoop (options) {
+    checkOptions(options);
+
+    this.animations = createAnimationArray(options);
     this.startTime = null;
-    this.animations = this.constructor.createAnimationArray(options);
     this.remaining = this.animations.length;
     this.complete = false;
 }
 
 AnimationLoop.create = function (options) {
+    return new this(options).start();
+};
+
+function checkOptions (options) {
     if (typeof options !== 'function' && typeof options !== 'object' && !Array.isArray(options)) {
         throw new Error('Options to AnimationLoop are not of a supported type.');
     }
@@ -53,11 +59,9 @@ AnimationLoop.create = function (options) {
             throw new Error('Array options to AnimationLoop are not of a supported type.');
         }
     }
+}
 
-    return new this(options).start();
-};
-
-AnimationLoop.createAnimationArray = function createAnimationArray (options) {
+function createAnimationArray (options) {
     if (Array.isArray(options)) {
         return options.map(createAnimationArray);
     }
@@ -69,7 +73,7 @@ AnimationLoop.createAnimationArray = function createAnimationArray (options) {
     if (typeof options === 'function') {
         return [{ render: options }];
     }
-};
+}
 
 AnimationLoop.raf = (function() {
     var raf = window.requestAnimationFrame ||
