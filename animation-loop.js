@@ -42,6 +42,14 @@
     }
 })('AnimationLoop', function () {
 
+var validOptions = [
+    'before',
+    'render',
+    'done',
+    'pauseThreshold',
+    'duration',
+];
+
 function AnimationLoop (options) {
     if (!(this instanceof AnimationLoop)) {
         return new AnimationLoop(options);
@@ -76,6 +84,8 @@ function checkOptions (options) {
 }
 
 function createAnimationArray (options) {
+    var obj, i, name;
+
     if (Array.isArray(options)) {
         return options.map(createAnimationArray).reduce(function (memo, wrapped) {
             return memo.concat(wrapped);
@@ -83,7 +93,18 @@ function createAnimationArray (options) {
     }
 
     if (typeof options === 'object') {
-        return [options];
+        obj = {};
+
+        if (typeof options.render !== 'function') {
+            throw new Error('There was no render function in the given object.');
+        }
+
+        for (i = 0; i < validOptions.length; ++i) {
+            name = validOptions[i];
+            obj[name] = options[name];
+        }
+
+        return [obj];
     }
 
     if (typeof options === 'function') {
