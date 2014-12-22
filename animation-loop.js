@@ -144,7 +144,7 @@ AnimationLoop.prototype = {
         this.runningTime = (runningTime += deltaT);
 
         timing = {
-            now: now,
+            time: now,
             deltaT: deltaT,
             startTime: startTime,
             lastTime: lastTime,
@@ -159,7 +159,7 @@ AnimationLoop.prototype = {
                 pct = Math.max(0, Math.min(1, runningTime / anim.duration));
                 anim.lastPct = anim.pct || pct;
                 anim.pct = pct;
-                passArgs.push({ pct: pct, lastPct: anim.lastPct });
+                passArgs.push({ now: pct, last: anim.lastPct });
             }
 
             if (typeof anim.before === 'function') {
@@ -182,7 +182,7 @@ AnimationLoop.prototype = {
             var state;
 
             if (anim.duration) {
-                passArgs.push({ pct: anim.pct, lastPct: anim.lastPct });
+                passArgs.push({ now: anim.pct, last: anim.lastPct });
             }
 
             // only render if anim.before() didn't return `false` or 'cancel'
