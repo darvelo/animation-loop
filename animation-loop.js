@@ -77,7 +77,9 @@ function checkOptions (options) {
 
 function createAnimationArray (options) {
     if (Array.isArray(options)) {
-        return options.map(createAnimationArray);
+      return options.map(createAnimationArray).reduce(function (memo, wrapped) {
+        return memo.concat(wrapped);
+      }, []);
     }
 
     if (typeof options === 'object') {
