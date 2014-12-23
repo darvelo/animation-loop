@@ -42,7 +42,7 @@
     }
 })('AnimationLoop', function () {
 
-var validOptions = [
+var validProps = [
     'context',
     'before',
     'render',
@@ -57,9 +57,7 @@ function AnimationLoop (options) {
         return new AnimationLoop(options);
     }
 
-    checkOptions(options);
-
-    this.animations = createAnimationArray(options);
+    this.animations = createAnimations(options);
     this.startTime = null;
     this.remaining = this.animations.length;
     this.complete = false;
@@ -69,49 +67,48 @@ AnimationLoop.create = function (options) {
     return new this(options).start();
 };
 
-function checkOptions (options) {
-    if (typeof options !== 'function' && typeof options !== 'object' && !Array.isArray(options)) {
+function is (obj, type) {
+    return type === ({}).toString.call(obj).slice(8,-1);
+}
+
+function not (obj, type) {
+    return !is(obj, type);
+}
+
+function composeFromObject (obj) {
+    var ret = {};
+    var i, name;
+
+    if (not(obj.render, 'Function')) {
+        throw new Error('There was no render function in the given object.');
+    }
+
+    for (i = 0; i < validProps.length; ++i) {
+        name = validProps[i];
+        ret[name] = obj[name];
+    }
+
+    return ret;
+}
+
+function createAnimationObject (option) {
+    var ret = is(option, 'Function') ? { render: option }
+            : is(option, 'Object')   ? composeFromObject(option)
+            : null;
+
+    if (is(ret, 'Null')) {
         throw new Error('Options to AnimationLoop are not of a supported type.');
     }
 
-    if (Array.isArray(options)) {
-        var optionsOK = options.every(function (anim) {
-            return typeof anim === 'function' || (typeof anim === 'object' && !Array.isArray(anim));
-        });
-
-        if (!optionsOK) {
-            throw new Error('Array options to AnimationLoop are not of a supported type.');
-        }
-    }
+    return ret;
 }
 
-function createAnimationArray (options) {
-    var obj, i, name;
-
-    if (Array.isArray(options)) {
-        return options.map(createAnimationArray).reduce(function (memo, wrapped) {
-            return memo.concat(wrapped);
-        }, []);
+function createAnimations (options) {
+    if (is(options, 'Array')) {
+        return options.map(options, createAnimationObject);
     }
 
-    if (typeof options === 'object') {
-        obj = {};
-
-        if (typeof options.render !== 'function') {
-            throw new Error('There was no render function in the given object.');
-        }
-
-        for (i = 0; i < validOptions.length; ++i) {
-            name = validOptions[i];
-            obj[name] = options[name];
-        }
-
-        return [obj];
-    }
-
-    if (typeof options === 'function') {
-        return [{ render: options }];
-    }
+    return createAnimationObject(options);
 }
 
 var raf = (function() {
