@@ -43,6 +43,7 @@
 })('AnimationLoop', function () {
 
 var validOptions = [
+    'context',
     'before',
     'render',
     'done',
@@ -175,6 +176,7 @@ AnimationLoop.prototype = {
 
         this.animations.forEach(function (anim) {
             var pct, state;
+            var context = anim.context || null;
             var passArgs = [timing];
 
             if (anim.duration) {
@@ -189,7 +191,7 @@ AnimationLoop.prototype = {
             }
 
             if (typeof anim.before === 'function') {
-                state = anim.before.apply(null, passArgs);
+                state = anim.before.apply(context, passArgs);
             }
 
             if (state === false) {
@@ -204,6 +206,7 @@ AnimationLoop.prototype = {
         this.animations = this.animations.filter(function (anim) {
             var running = anim.running !== false;
             var cancel  = anim.cancel === true;
+            var context = anim.context || null;
             var passArgs = [timing];
             var state;
 
@@ -217,7 +220,7 @@ AnimationLoop.prototype = {
 
             // only render if anim.before() didn't return `false` or 'cancel'
             if (running && !cancel) {
-                state = anim.render.apply(null, passArgs);
+                state = anim.render.apply(context, passArgs);
             }
 
             if (state === 'cancel') {
@@ -231,7 +234,7 @@ AnimationLoop.prototype = {
                 this.remaining--;
 
                 if (typeof anim.done === 'function') {
-                    anim.done.apply(null, passArgs);
+                    anim.done.apply(context, passArgs);
                 }
             }
 
