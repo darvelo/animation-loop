@@ -105,7 +105,7 @@ function createAnimationObject (option) {
 
 function createAnimations (options) {
     if (is(options, 'Array')) {
-        return options.map(options, createAnimationObject);
+        return options.map(createAnimationObject);
     }
 
     return createAnimationObject(options);
