@@ -1,6 +1,6 @@
 {
   "name": "animation-loop",
-  "private", true,
+  "private": true,
   "version": "0.0.1",
   "description": "Create animation loops using requestAnimationFrame.",
   "scripts": {
