@@ -1,75 +1,45 @@
-function AnimationLoop (options) {
-    if (!(this instanceof AnimationLoop)) {
-        return new AnimationLoop(options);
+class AnimationLoop {
+    constructor(options) {
+        if (!(this instanceof AnimationLoop)) {
+            return new AnimationLoop(options);
+        }
+
+        this.animations = AnimationLoop.createAnimations(options);
+        this.startTime = null;
+        this.remaining = this.animations.length;
+        this.complete = false;
     }
 
-    this.animations = createAnimations(options);
-    this.startTime = null;
-    this.remaining = this.animations.length;
-    this.complete = false;
-}
-
-AnimationLoop.create = function (options) {
-    return new this(options).start();
-};
-
-function composeFromObject (obj) {
-    var ret = {};
-    var i, name;
-
-    if (not(obj.render, 'Function')) {
-        throw new Error('There was no render function in the given object.');
+    static create(options) {
+        return new this(options).start();
     }
 
-    for (i = 0; i < validProps.length; ++i) {
-        name = validProps[i];
-        ret[name] = obj[name];
+    static createAnimations(options) {
+        if (not(options, 'Array')) {
+            options = [options];
+        }
+
+        return options.map(option => new Animation(option));
     }
 
-    return ret;
-}
-
-function createAnimationObject (option) {
-    var ret = is(option, 'Function') ? { render: option }
-            : is(option, 'Object')   ? composeFromObject(option)
-            : null;
-
-    if (is(ret, 'Null')) {
-        throw new Error('Options to AnimationLoop are not of a supported type.');
-    }
-
-    return ret;
-}
-
-function createAnimations (options) {
-    if (is(options, 'Array')) {
-        return options.map(createAnimationObject);
-    }
-
-    return createAnimationObject(options);
-}
-
-AnimationLoop.prototype = {
-    constructor: AnimationLoop,
-
-    start: function () {
+    start() {
         this.rafId = raf(this.cycle.bind(this));
         return this;
-    },
+    }
 
     // @TODO: pauseAll()
 
-    cancel: function () {
+    cancel() {
         caf(this.rafId);
         return this;
-    },
+    }
 
-    add: function (obj) {
-        var anim = createAnimationObject(obj);
-        this.animations.push(anim);
-    },
+    add(options) {
+        var anims = AnimationLoop.createAnimations(options);
+        this.animations = this.animations.concat(anims);
+    }
 
-    cycle: function (now) {
+    cycle(now) {
         var startTime, lastTime, runningTime, deltaT, timing;
         var pauseThreshold = this.pauseThreshold;
 
@@ -96,15 +66,9 @@ AnimationLoop.prototype = {
         this.runningTime = (runningTime += deltaT);
 
         // @TODO: pass previous timing object to before() ?
-        timing = {
-            time: now,
-            deltaT: deltaT,
-            startTime: startTime,
-            lastTime: lastTime,
-            runningTime: runningTime,
-        };
+        timing = { now, deltaT, startTime, lastTime, runningTime };
 
-        this.animations.forEach(function (anim) {
+        this.animations.forEach(anim => {
             // @TODO: add this.pause() ?
             var pct, state;
             var context = anim.context || null;
@@ -132,9 +96,9 @@ AnimationLoop.prototype = {
             if (state === 'cancel') {
                 anim.cancel = true;
             }
-        }, this);
+        });
 
-        this.animations = this.animations.filter(function (anim) {
+        this.animations = this.animations.filter(anim => {
             var running = anim.running !== false;
             var cancel  = anim.cancel === true;
             var context = anim.context || null;
@@ -179,6 +143,6 @@ AnimationLoop.prototype = {
             }
 
             return true;
-        }, this);
-    },
-};
+        });
+    }
+}
