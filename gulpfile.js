@@ -9,18 +9,26 @@ var dest = 'built';
 var src  = 'src';
 
 // js vars
-var builtFileName = 'animation-loop.min.js';
-var builtFile     = dest + '/' + builtFileName;
-var license       = src + '/' + 'license.js';
-var iffyStart     = src + '/iffy-start.js';
-var iffyEnd       = src + '/iffy-end.js';
-var transpiling   = [src + '/animation-loop.js'];
+var entrypoint    = 'animation-loop';
+var builtFileName = entrypoint + '.min.js';
+var transpiling = [
+    'utils',
+    'raf',
+    'animation',
+    entrypoint,
+].map(mapSourceFiles);
 var wrapping = [
-    license,
-    iffyStart,
-    builtFile,
-    iffyEnd,
-];
+    'license',
+    'iffy-start',
+    builtFileName,
+    'iffy-end',
+].map(mapSourceFiles);
+
+function mapSourceFiles (filename) {
+    var prefix = ((filename === builtFileName) ? dest : src) + '/';
+    var extension = /\.\w{1,3}$/.test(filename) ? '' : '.js';
+    return prefix + filename + extension;
+}
 
 gulp.task('clean', function(cb) {
     del(dest, cb);
