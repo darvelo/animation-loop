@@ -71,7 +71,6 @@ class AnimationLoop {
         this.animations.forEach(anim => {
             // @TODO: add this.pause() ?
             var pct, state;
-            var context = anim.context || null;
             var passArgs = [timing];
 
             if (anim.duration) {
@@ -86,7 +85,7 @@ class AnimationLoop {
             }
 
             if (typeof anim.before === 'function') {
-                state = anim.before.apply(context, passArgs);
+                state = anim.before(...passArgs);
             }
 
             if (state === false) {
@@ -101,7 +100,6 @@ class AnimationLoop {
         this.animations = this.animations.filter(anim => {
             var running = anim.running !== false;
             var cancel  = anim.cancel === true;
-            var context = anim.context || null;
             var passArgs = [timing];
             var state;
 
@@ -115,7 +113,7 @@ class AnimationLoop {
 
             // only render if anim.before() didn't return `false` or 'cancel'
             if (running && !cancel) {
-                state = anim.render.apply(context, passArgs);
+                state = anim.render(...passArgs);
             }
 
             if (state === 'cancel') {
@@ -129,7 +127,7 @@ class AnimationLoop {
                 this.remaining--;
 
                 if (typeof anim.done === 'function') {
-                    anim.done.apply(context, passArgs);
+                    anim.done(...passArgs);
                 }
             }
 

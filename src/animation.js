@@ -1,5 +1,4 @@
 var validProps = [
-    'context',
     'before',
     'render',
     'done',
