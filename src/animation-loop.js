@@ -70,7 +70,7 @@ class AnimationLoop {
 
         this.animations.forEach(anim => {
             // @TODO: add this.pause() ?
-            var pct, state;
+            var pct;
             var passArgs = [timing];
 
             if (anim.duration) {
@@ -85,23 +85,18 @@ class AnimationLoop {
             }
 
             if (typeof anim.before === 'function') {
-                state = anim.before(...passArgs);
+                anim.before(...passArgs);
             }
 
-            if (state === false) {
-                anim.running = false;
+            if (!anim.running || anim.canceled) {
+                return false;
             }
 
-            if (state === 'cancel') {
-                anim.cancel = true;
-            }
+            return true;
         });
 
         this.animations = this.animations.filter(anim => {
-            var running = anim.running !== false;
-            var cancel  = anim.cancel === true;
             var passArgs = [timing];
-            var state;
 
             if (anim.duration) {
                 passArgs.push({ now: anim.pct, last: anim.lastPct });
@@ -111,19 +106,15 @@ class AnimationLoop {
                 passArgs = passArgs.concat(anim.args);
             }
 
-            // only render if anim.before() didn't return `false` or 'cancel'
-            if (running && !cancel) {
-                state = anim.render(...passArgs);
-            }
+            anim.render(...passArgs);
 
-            if (state === 'cancel') {
-                cancel = anim.cancel = true;
+            if (anim.canceled) {
                 this.remaining--;
             }
 
             // if animation running time is 100% of its duration, don't queue it up again
-            if (!cancel && (state === false || anim.pct === 1)) {
-                running = anim.running = false;
+            if (!anim.canceled && (!anim.running || anim.pct === 1)) {
+                anim.stop();
                 this.remaining--;
 
                 if (typeof anim.done === 'function') {
@@ -136,7 +127,7 @@ class AnimationLoop {
                 this.oncomplete();
             }
 
-            if (running === false || cancel) {
+            if (!anim.running || anim.canceled) {
                 return false;
             }
 

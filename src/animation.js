@@ -31,5 +31,15 @@ class Animation {
             name = validProps[i];
             this[name] = obj[name];
         }
+
+        this.running = true;
+    }
+
+    stop() {
+        this.running = false;
+    }
+
+    cancel() {
+        this.canceled = true;
     }
 }
