@@ -1,4 +1,4 @@
-(function (name, definition) {
+;(function (name, definition) {
     var global;
 
     if (typeof exports !== 'undefined' && typeof module !== 'undefined') {

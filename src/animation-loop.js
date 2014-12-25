@@ -1,21 +1,3 @@
-var validProps = [
-    'context',
-    'before',
-    'render',
-    'done',
-    'args',
-    'pauseThreshold',
-    'duration',
-];
-
-function is (obj, type) {
-    return type === ({}).toString.call(obj).slice(8,-1);
-}
-
-function not (obj, type) {
-    return !is(obj, type);
-}
-
 function AnimationLoop (options) {
     if (!(this instanceof AnimationLoop)) {
         return new AnimationLoop(options);
@@ -66,19 +48,6 @@ function createAnimations (options) {
 
     return createAnimationObject(options);
 }
-
-var raf = (function() {
-    return window.requestAnimationFrame ||
-           window.webkitRequestAnimationFrame ||
-           window.mozRequestAnimationFrame;
-})();
-
-var caf = (function() {
-    return window.cancelAnimationFrame ||
-           window.cancelRequestAnimationFrame ||
-           window.webkitCancelRequestAnimationFrame ||
-           window.mozCancelRequestAnimationFrame;
-})();
 
 AnimationLoop.prototype = {
     constructor: AnimationLoop,
