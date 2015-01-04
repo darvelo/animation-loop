@@ -37,6 +37,7 @@ class AnimationLoop {
     add(options) {
         var anims = AnimationLoop.createAnimations(options);
         this.animations = this.animations.concat(anims);
+        this.remaining += anims.length;
     }
 
     cycle(now) {
