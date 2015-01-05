@@ -8,7 +8,7 @@ var validProps = [
 ];
 
 class Animation {
-    constructor(obj) {
+    constructor (obj) {
         var i, name;
 
         if (!(this instanceof Animation)) {
@@ -35,11 +35,19 @@ class Animation {
         this.running = true;
     }
 
-    stop() {
-        this.running = false;
+    start () {
+        this.rafId = raf(this.cycle.bind(this));
+        return this;
     }
 
-    cancel() {
+    pause () {
+        caf(this.rafId);
+        this.paused = true;
+        return this;
+    }
+
+    cancel () {
         this.canceled = true;
+        return this;
     }
 }

@@ -1,5 +1,5 @@
 class AnimationLoop {
-    constructor(options) {
+    constructor (options) {
         if (!(this instanceof AnimationLoop)) {
             return new AnimationLoop(options);
         }
@@ -11,8 +11,8 @@ class AnimationLoop {
         this.registry = {};
     }
 
-    static create(options) {
-        return new this(options).start();
+    static create (options) {
+        return new this(options).startAll();
     }
 
     static createAnimations(options) {
@@ -23,22 +23,27 @@ class AnimationLoop {
         return options.map(option => new Animation(option));
     }
 
-    start() {
-        this.rafId = raf(this.cycle.bind(this));
+    startAll () {
+        this.animations.forEach(anim => anim.start());
         return this;
     }
 
-    // @TODO: pauseAll()
-
-    cancel() {
-        caf(this.rafId);
+    pauseAll () {
+        this.animations.forEach(anim => anim.pause());
         return this;
     }
 
-    add(options) {
+    cancelAll () {
+        this.animations.forEach(anim => anim.cancel());
+        return this;
+    }
+
+    add (options) {
         var anims = AnimationLoop.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
+
+        this.animations.forEach(anim => anim.start());
     }
 
     addEventListener (name, callback, ctx) {
