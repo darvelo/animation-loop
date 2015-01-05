@@ -77,7 +77,12 @@ class AnimationLoop {
         });
     }
 
-    cycle(now) {
+    // default behavior. user is expected to override if desired.
+    oncomplete () {
+        this.trigger('complete');
+    }
+
+    cycle (now) {
         var startTime, lastTime, runningTime, deltaT, timing;
         var pauseThreshold = this.pauseThreshold;
 
