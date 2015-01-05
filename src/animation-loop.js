@@ -62,7 +62,7 @@ class AnimationLoop {
             if (cb === callback) {
                 // make sure ctx is checked if it was passed in.
                 // if not, remove all callbacks regardless of cx.
-                if (arglen === 1 || cx === ctx) {
+                if (arglen === 2 || cx === ctx) {
                     callbacks.splice(i, 1);
                 }
             }
