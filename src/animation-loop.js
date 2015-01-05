@@ -8,6 +8,7 @@ class AnimationLoop {
         this.startTime = null;
         this.remaining = this.animations.length;
         this.complete = false;
+        this.registry = {};
     }
 
     static create(options) {
@@ -38,6 +39,37 @@ class AnimationLoop {
         var anims = AnimationLoop.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
+    }
+
+    addEventListener (name, callback, ctx) {
+        var callbacks = this.registry[name] || (this.registry[name] = []);
+        callbacks.push([callback, ctx]);
+    }
+
+    removeEventListener (name, callback, ctx) {
+        var arglen = arguments.length;
+        var callbacks = this.registry[name] || [];
+        var cb, cx;
+
+        for (let i = callbacks.length - 1; i >= 0; --i) {
+            [ cb, cx ] = callbacks[i];
+
+            if (cb === callback) {
+                // make sure ctx is checked if it was passed in.
+                // if not, remove all callbacks regardless of cx.
+                if (arglen === 1 || cx === ctx) {
+                    callbacks.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    trigger (name) {
+        var callbacks = this.registry[name] || [];
+        callbacks.forEach(arr => {
+            var [ func, ctx ] = arr;
+            func.call(ctx);
+        });
     }
 
     cycle(now) {
