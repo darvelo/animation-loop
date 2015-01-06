@@ -93,7 +93,7 @@ class Animation {
         }
 
         // store previous state data
-        this.previousState = this.state;
+        previousState = this.previousState = this.state;
 
         // create new state data based on the previous state values
         this.state = {
