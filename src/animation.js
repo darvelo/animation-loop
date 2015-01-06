@@ -143,6 +143,11 @@ class Animation {
 
         this.render(...args);
 
+        // do not call done() if the animation was paused or canceled in render()
+        if (this.paused || this.canceled) {
+            return;
+        }
+
         if (state.progress === 1) {
             if (is(this.done, 'Function')) {
                 this.done(...args);
