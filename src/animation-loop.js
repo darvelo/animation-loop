@@ -4,11 +4,20 @@ class AnimationLoop {
             return new AnimationLoop(options);
         }
 
-        this.animations = AnimationLoop.createAnimations(options);
-        this.startTime = null;
+        this.animations = [];
+        this.add(options);
+
         this.remaining = this.animations.length;
         this.complete = false;
         this.registry = {};
+    }
+
+    _animationComplete () {
+        this.remaining--;
+
+        if (this.remaining === 0) {
+            this.complete = true;
+        }
     }
 
     static create (options) {
@@ -43,7 +52,14 @@ class AnimationLoop {
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
 
-        this.animations.forEach(anim => anim.start());
+        anims.forEach(anim => {
+            // keep track of how many animations have completed
+            anim.oncomplete = this._animationComplete.bind(this);
+
+            anim.start();
+        });
+
+        return this;
     }
 
     addEventListener (name, callback, ctx) {
