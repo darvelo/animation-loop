@@ -48,8 +48,6 @@ class Animation {
         }
 
         this.rafId = raf(this.cycle.bind(this));
-        // unpause if paused
-        this.paused = false;
         return this;
     }
 
@@ -119,10 +117,15 @@ class Animation {
         // set up another frame
         this.rafId = raf(this.cycle.bind(this));
 
+        // @TODO: get pauseThreshold working again
         // only run animation when the time between frames is short enough.
         // the gap can be wide if the tab becomes inactive, etc.
         // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
+        //
+        // if paused, we're now resuming since cycle() is called only by start() and itself.
+        // we need to burn one cycle in order to get the deltaT's flowing freely again.
         if (this.pauseThreshold && state.deltaT >= this.pauseThreshold || this.paused) {
+            this.paused = false;
             return;
         }
 
