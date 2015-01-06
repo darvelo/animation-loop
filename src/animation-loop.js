@@ -4,18 +4,19 @@ class AnimationLoop {
             return new AnimationLoop(options);
         }
 
+        this.remaining = 0;
+        this.completed = false;
+        this.registry = {};
+
         this.animations = [];
         this.add(options);
-
-        this.remaining = this.animations.length;
-        this.complete = false;
-        this.registry = {};
     }
 
     _animationComplete () {
         this.remaining--;
 
         if (this.remaining === 0 && is(this.oncomplete, 'Function')) {
+            this.completed = true;
             this.oncomplete();
         }
     }
