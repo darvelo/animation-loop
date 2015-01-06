@@ -32,22 +32,27 @@ class Animation {
             this[name] = obj[name];
         }
 
-        this.running = true;
+        this.rafId = null;
+        this.paused = false;
+        this.canceled = false;
     }
 
     start () {
         this.rafId = raf(this.cycle.bind(this));
+        this.paused = false;
         return this;
     }
 
     pause () {
         caf(this.rafId);
+        this.rafId = null;
         this.paused = true;
         return this;
     }
 
     cancel () {
         this.canceled = true;
+        this.oncomplete();
         return this;
     }
 }
