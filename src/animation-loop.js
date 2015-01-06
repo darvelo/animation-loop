@@ -15,8 +15,8 @@ class AnimationLoop {
     _animationComplete () {
         this.remaining--;
 
-        if (this.remaining === 0) {
-            this.complete = true;
+        if (this.remaining === 0 && is(this.oncomplete, 'Function')) {
+            this.oncomplete();
         }
     }
 
