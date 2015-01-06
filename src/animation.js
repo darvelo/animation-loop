@@ -61,10 +61,8 @@ class Animation {
     }
 
     cancel () {
-        caf(this.rafId);
-        this.rafId = null;
         this.canceled = true;
-        this.oncomplete();
+        this.complete();
         return this;
     }
 
