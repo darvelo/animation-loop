@@ -56,11 +56,9 @@ class AnimationLoop {
         anims.forEach(anim => {
             // keep track of how many animations have completed
             anim.oncomplete = this._animationComplete.bind(this);
-
-            anim.start();
         });
 
-        return this;
+        return anims;
     }
 
     addEventListener (name, callback, ctx) {
