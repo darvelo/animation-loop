@@ -12,15 +12,6 @@ class AnimationLoop {
         this.add(options);
     }
 
-    _animationComplete () {
-        this.remaining--;
-
-        if (this.remaining === 0 && is(this.oncomplete, 'Function')) {
-            this.completed = true;
-            this.oncomplete();
-        }
-    }
-
     static create (options) {
         return new this(options).startAll();
     }
@@ -46,6 +37,18 @@ class AnimationLoop {
     cancelAll () {
         this.animations.forEach(anim => anim.cancel());
         return this;
+    }
+
+    _animationComplete () {
+        this.remaining--;
+
+        if (this.remaining === 0) {
+            this.completed = true;
+
+            if (is(this.oncomplete, 'Function')) {
+                this.oncomplete();
+            }
+        }
     }
 
     add (options) {
