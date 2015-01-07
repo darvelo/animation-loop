@@ -55,7 +55,7 @@ class AnimationLoop {
 
         anims.forEach(anim => {
             // keep track of how many animations have completed
-            anim.oncomplete = this._animationComplete.bind(this);
+            anim._oncomplete = this._animationComplete.bind(this);
         });
 
         return anims;

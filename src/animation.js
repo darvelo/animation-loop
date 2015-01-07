@@ -68,7 +68,7 @@ class Animation {
         caf(this.rafId);
         this.rafId = null;
         this.completed = true;
-        this.oncomplete();
+        this._oncomplete();
         return this;
     }
 
