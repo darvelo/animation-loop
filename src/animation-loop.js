@@ -71,11 +71,17 @@ class AnimationLoop {
 
     removeEventListener (name, callback, ctx) {
         var arglen = arguments.length;
-        var callbacks = this.registry[name] || [];
-        var cb, cx;
+        var callbacks;
+
+        if (arglen === 1) {
+            delete this.registry[name];
+            return;
+        }
+
+        callbacks = this.registry[name] || [];
 
         for (let i = callbacks.length - 1; i >= 0; --i) {
-            [ cb, cx ] = callbacks[i];
+            let [ cb, cx ] = callbacks[i];
 
             if (cb === callback) {
                 // make sure ctx is checked if it was passed in.
