@@ -101,8 +101,8 @@ class Animation {
             // use previous values for these two because if the animation is paused,
             // or there is too much of a delay between frames (this.pauseThreshold),
             // the elapsed time between frames should not accumulate here.
-            runningTime: previousState.runningTime || now - this.startTime,
-            progress: previousState.progress
+            runningTime: previousState.runningTime,
+            progress: previousState.progress,
         };
     }
 
