@@ -92,7 +92,7 @@ class AnimationLoop {
         });
     }
 
-    // default behavior. user is expected to override if desired.
+    // default behavior that the user can override if desired
     oncomplete () {
         this.trigger('complete');
     }

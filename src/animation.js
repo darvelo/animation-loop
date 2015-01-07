@@ -24,7 +24,7 @@ class Animation {
         }
 
         if (not(obj.render, 'Function')) {
-            throw new Error('There was no render function in the given object.');
+            throw new Error('There was no render function supplied to the AnimationLoop.');
         }
 
         for (i = 0; i < validProps.length; ++i) {
@@ -98,7 +98,7 @@ class Animation {
             now,
             lastNow: previousState.now,
             deltaT: now - previousState.now,
-            // use old values for these two because if the animation is paused,
+            // use previous values for these two because if the animation is paused,
             // or there is too much of a delay between frames (this.pauseThreshold),
             // the elapsed time between frames should not accumulate here.
             runningTime: previousState.runningTime || now - this.startTime,
@@ -119,17 +119,17 @@ class Animation {
 
         // @TODO: get pauseThreshold working again
         // only run animation when the time between frames is short enough.
-        // the gap can be wide if the tab becomes inactive, etc.
+        // the gap can be wide if the tab becomes inactive, app is switched, etc.
         // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
         //
         // if paused, we're now resuming since cycle() is called only by start() and itself.
-        // we need to burn one cycle in order to get the deltaT's flowing freely again.
-        if (this.pauseThreshold && state.deltaT >= this.pauseThreshold || this.paused) {
+        // we need to burn one cycle in order to get the deltaT's small enough to animate smoothly.
+        if (this.paused || this.pauseThreshold && state.deltaT >= this.pauseThreshold) {
             this.paused = false;
             return;
         }
 
-        // now that we know that the animation will run, update the runningTime and progress value
+        // now that we know that the animation will run, update the runningTime and progress values
         state.runningTime += state.deltaT;
         if (this.duration) {
             state.progress = Math.max(0, Math.min(1, state.runningTime / this.duration));
