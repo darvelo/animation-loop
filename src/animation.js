@@ -3,33 +3,15 @@ var validProps = [
     'render',
     'done',
     'args',
-    'pauseThreshold',
     'duration',
+    'paused',
+    'pauseThreshold',
 ];
 
 class Animation {
-    constructor (obj) {
-        var i, name;
-
+    constructor (options) {
         if (!(this instanceof Animation)) {
-            return new Animation(obj);
-        }
-
-        obj = is(obj, 'Object')   ? obj
-            : is(obj, 'Function') ? { render: obj }
-            : null;
-
-        if (is(obj, 'Null')) {
-            throw new Error('Options to AnimationLoop are not of a supported type.');
-        }
-
-        if (not(obj.render, 'Function')) {
-            throw new Error('There was no render function supplied to the AnimationLoop.');
-        }
-
-        for (i = 0; i < validProps.length; ++i) {
-            name = validProps[i];
-            this[name] = obj[name];
+            return new Animation(options);
         }
 
         // state
@@ -40,6 +22,29 @@ class Animation {
 
         // timing
         this.startTime = null;
+
+        this.mergeOptions(options);
+    }
+
+    mergeOptions (options) {
+        var i, name;
+
+        options = is(options, 'Object')   ? options
+                : is(options, 'Function') ? { render: options }
+                : null;
+
+        if (is(options, 'Null')) {
+            throw new Error('Options to AnimationLoop are not of a supported type.');
+        }
+
+        if (not(options.render, 'Function')) {
+            throw new Error('There was no render function supplied to the AnimationLoop.');
+        }
+
+        for (i = 0; i < validProps.length; ++i) {
+            name = validProps[i];
+            this[name] = options[name];
+        }
     }
 
     start () {
