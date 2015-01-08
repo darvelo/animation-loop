@@ -1,40 +1,85 @@
+var validProps = [
+    'before',
+    'render',
+    'done',
+    'args',
+    'duration',
+    'paused',
+    'pauseThreshold',
+    'autonomous',
+];
+
 class AnimationLoop {
     constructor (options) {
         if (!(this instanceof AnimationLoop)) {
             return new AnimationLoop(options);
         }
 
+        options = options || {};
+
+        this.animations = [];
         this.remaining = 0;
         this.completed = false;
         this.registry = {};
 
-        this.animations = [];
-        this.add(options);
+        // flag that tells animations whether to request their own frames
+        this.autonomous = options.autonomous || false;
+        this.pauseThreshold = is(options.pauseThreshold, 'Undefined') ? false : options.pauseThreshold;
     }
 
-    static create (options) {
-        return new this(options).startAll();
-    }
-
-    static createAnimations(options) {
-        if (not(options, 'Array')) {
-            options = [options];
+    createAnimations(optionsList) {
+        if (not(optionsList, 'Array')) {
+            optionsList = [optionsList];
         }
 
-        return options.map(option => new Animation(option));
+        return optionsList.map(options => {
+            // validate properties
+            options = this.getScrubbedOptions(options);
+            // merge loop's options
+            options.autonomous = options.autonomous || this.autonomous;
+            options.pauseThreshold = options.pauseThreshold || this.pauseThreshold;
+            // keep track of how many animations have completed
+            options._oncomplete = this._animationComplete.bind(this);
+            return new Animation(options);
+        });
     }
 
-    startAll () {
+    getScrubbedOptions (options) {
+        var scrubbed = {};
+
+        options = is(options, 'Object')   ? options
+                : is(options, 'Function') ? { render: options }
+                : null;
+
+        if (is(options, 'Null')) {
+            throw new Error('Options to AnimationLoop are not of a supported type.');
+        }
+
+        if (not(options.render, 'Function')) {
+            throw new Error('There was no render function supplied to the AnimationLoop.');
+        }
+
+        // only add whitelisted props
+        for (let prop of validProps) {
+            if (not(options[prop], 'Undefined') && options.hasOwnProperty(prop)) {
+                scrubbed[prop] = options[prop];
+            }
+        }
+
+        return scrubbed;
+    }
+
+    start () {
         this.animations.forEach(anim => anim.start());
         return this;
     }
 
-    pauseAll () {
+    pause () {
         this.animations.forEach(anim => anim.pause());
         return this;
     }
 
-    cancelAll () {
+    cancel () {
         this.animations.forEach(anim => anim.cancel());
         return this;
     }
@@ -52,15 +97,9 @@ class AnimationLoop {
     }
 
     add (options) {
-        var anims = AnimationLoop.createAnimations(options);
+        var anims = this.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
-
-        anims.forEach(anim => {
-            // keep track of how many animations have completed
-            anim._oncomplete = this._animationComplete.bind(this);
-        });
-
         return anims;
     }
 

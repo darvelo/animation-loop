@@ -1,13 +1,3 @@
-var validProps = [
-    'before',
-    'render',
-    'done',
-    'args',
-    'duration',
-    'paused',
-    'pauseThreshold',
-];
-
 class Animation {
     constructor (options) {
         if (!(this instanceof Animation)) {
@@ -16,39 +6,25 @@ class Animation {
 
         // state
         this.rafId = null;
-        this.paused = false;
         this.canceled = false;
         this.completed = false;
+        this.paused = false;
+        this.autonomous = false;
 
         // timing
         this.startTime = null;
 
-        this.mergeOptions(options);
-    }
-
-    mergeOptions (options) {
-        var i, name;
-
-        options = is(options, 'Object')   ? options
-                : is(options, 'Function') ? { render: options }
-                : null;
-
-        if (is(options, 'Null')) {
-            throw new Error('Options to AnimationLoop are not of a supported type.');
+        for (let key of Object.keys(options)) {
+            this[key] = options[key];
         }
 
-        if (not(options.render, 'Function')) {
-            throw new Error('There was no render function supplied to the AnimationLoop.');
-        }
-
-        for (i = 0; i < validProps.length; ++i) {
-            name = validProps[i];
-            this[name] = options[name];
+        if (this.autonomous) {
+            this.start();
         }
     }
 
     start () {
-        if (this.completed) {
+        if (this.completed || this.canceled || !this.autonomous) {
             return;
         }
 
