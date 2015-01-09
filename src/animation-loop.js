@@ -61,7 +61,7 @@ class AnimationLoop {
 
         // only add whitelisted props
         for (let prop of validProps) {
-            if (not(options[prop], 'Undefined') && options.hasOwnProperty(prop)) {
+            if (options.hasOwnProperty(prop) && not(options[prop], 'Undefined')) {
                 scrubbed[prop] = options[prop];
             }
         }
