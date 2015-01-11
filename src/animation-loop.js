@@ -100,6 +100,7 @@ class AnimationLoop {
         var anims = this.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
+        this.complete = false;
         return anims;
     }
 
