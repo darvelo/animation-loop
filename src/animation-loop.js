@@ -140,6 +140,27 @@ class AnimationLoop {
         return anims;
     }
 
+    clearCompleted() {
+        var animations = this.animations;
+        // return all animations removed
+        var completed = [];
+
+        for (var i = animations.length-1; i >= 0; --i) {
+            let anim = animations[i];
+
+            // canceled animations are also considered completed
+            if (anim.completed) {
+                completed = completed.concat(animations.splice(i, 1));
+            }
+        }
+
+        // put animations in their original order
+        completed.reverse();
+
+        this.remaining -= completed.length;
+        return completed;
+    }
+
     addEventListener (name, callback, ctx) {
         var callbacks = this.registry[name] || (this.registry[name] = []);
         callbacks.push([callback, ctx]);
