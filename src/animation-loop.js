@@ -152,8 +152,7 @@ class AnimationLoop {
         for (var i = animations.length-1; i >= 0; --i) {
             let anim = animations[i];
 
-            // canceled animations are also considered completed
-            if (anim.completed) {
+            if (anim.completed || anim.canceled) {
                 completed = completed.concat(animations.splice(i, 1));
             }
         }
