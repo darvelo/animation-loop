@@ -83,7 +83,7 @@ class AnimationLoop {
     start () {
         this.animations.forEach(anim => anim.start());
 
-        if (!this.autonomous) {
+        if (!this.autonomous && !this.completed) {
             // prevent launching multiple rafs
             this.cancelRAF();
             this.rafId = raf(this.cycle.bind(this));
