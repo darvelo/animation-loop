@@ -157,7 +157,6 @@ class AnimationLoop {
         // put animations in their original order
         completed.reverse();
 
-        this.remaining -= completed.length;
         return completed;
     }
 
