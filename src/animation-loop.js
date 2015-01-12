@@ -130,7 +130,7 @@ class AnimationLoop {
         var anims = this.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
-        this.complete = false;
+        this.completed = false;
 
         // start animations as soon as they're added, unless paused
         if (!this.autonomous && !this.paused) {
