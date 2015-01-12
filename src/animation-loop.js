@@ -24,6 +24,12 @@ class AnimationLoop {
 
         // flag that tells animations whether to request their own frames
         this.autonomous = options.autonomous || false;
+
+        if (!this.autonomous) {
+            this.paused = false;
+            this.rafId = null;
+        }
+
         this.pauseThreshold = is(options.pauseThreshold, 'Undefined') ? false : options.pauseThreshold;
     }
 
@@ -69,18 +75,42 @@ class AnimationLoop {
         return scrubbed;
     }
 
+    cancelRAF() {
+        caf(this.rafId);
+        this.rafId = null;
+    }
+
     start () {
         this.animations.forEach(anim => anim.start());
+
+        if (!this.autonomous) {
+            // prevent launching multiple rafs
+            this.cancelRAF();
+            this.rafId = raf(this.cycle.bind(this));
+            this.paused = false;
+        }
+
         return this;
     }
 
     pause () {
         this.animations.forEach(anim => anim.pause());
+
+        if (!this.autonomous) {
+            this.cancelRAF();
+            this.paused = true;
+        }
+
         return this;
     }
 
     cancel () {
         this.animations.forEach(anim => anim.cancel());
+
+        if (this.autonomous) {
+            this.cancelRAF();
+        }
+
         return this;
     }
 
@@ -101,6 +131,12 @@ class AnimationLoop {
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
         this.complete = false;
+
+        // start animations as soon as they're added, unless paused
+        if (!this.autonomous && !this.paused) {
+            this.start();
+        }
+
         return anims;
     }
 
@@ -144,5 +180,9 @@ class AnimationLoop {
     // default behavior that the user can override if desired
     oncomplete () {
         this.trigger('complete');
+    }
+
+    cycle (now) {
+        // if animation is autonomous, completed, paused, or canceled, skip over it
     }
 }

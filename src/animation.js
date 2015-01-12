@@ -5,7 +5,6 @@ class Animation {
         }
 
         // state
-        this.rafId = null;
         this.canceled = false;
         this.completed = false;
         this.paused = false;
@@ -19,22 +18,42 @@ class Animation {
         }
 
         if (this.autonomous) {
-            this.start();
+            this.rafId = null;
         }
+
+        this.start();
+    }
+
+    cancelRAF() {
+        caf(this.rafId);
+        this.rafId = null;
     }
 
     start () {
-        if (this.completed || this.canceled || !this.autonomous) {
-            return;
+        if (this.completed || this.canceled) {
+            return this;
         }
 
-        this.rafId = raf(this.cycle.bind(this));
+        if (this.autonomous) {
+            // prevent launching multiple rafs
+            this.cancelRAF();
+            this.rafId = raf(this.cycle.bind(this));
+        }
+
+        this.paused = false;
         return this;
     }
 
     pause () {
-        caf(this.rafId);
-        this.rafId = null;
+        // prevent state change after animation completes
+        if (this.completed || this.canceled) {
+            return this;
+        }
+
+        if (this.autonomous) {
+            this.cancelRAF();
+        }
+
         this.paused = true;
         return this;
     }
@@ -46,8 +65,10 @@ class Animation {
     }
 
     complete () {
-        caf(this.rafId);
-        this.rafId = null;
+        if (this.autonomous) {
+            this.cancelRAF();
+        }
+
         this.completed = true;
         this._oncomplete();
         return this;
@@ -88,6 +109,11 @@ class Animation {
     }
 
     cycle (now) {
+        // make sure this method isn't accidentally called
+        if (!this.autonomous) {
+            return;
+        }
+
         // must do this first
         this.updateState(now);
 
@@ -98,7 +124,6 @@ class Animation {
         // set up another frame
         this.rafId = raf(this.cycle.bind(this));
 
-        // @TODO: get pauseThreshold working again
         // only run animation when the time between frames is short enough.
         // the gap can be wide if the tab becomes inactive, app is switched, etc.
         // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
