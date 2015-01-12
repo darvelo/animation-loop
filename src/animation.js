@@ -78,6 +78,11 @@ class Animation {
     complete () {
         if (this.autonomous) {
             this.cancelRAF();
+
+            if (is(this.done, 'Function')) {
+                let args = this.args || [];
+                this.done(...args);
+            }
         }
 
         this.completed = true;
@@ -152,23 +157,19 @@ class Animation {
             this.before(...args);
         }
 
-        // do not call render() if the animation was paused or canceled in before()
-        if (this.paused || this.canceled) {
+        // do not call render() if the animation state changed in before()
+        if (this.paused || this.canceled || this.completed) {
             return;
         }
 
         this.render(...args);
 
-        // do not call done() if the animation was paused or canceled in render()
-        if (this.paused || this.canceled) {
+        // do not call done() if the animation state changed in render()
+        if (this.paused || this.canceled || this.completed) {
             return;
         }
 
         if (state.progress === 1) {
-            if (is(this.done, 'Function')) {
-                this.done(...args);
-            }
-
             this.complete();
         }
     }
