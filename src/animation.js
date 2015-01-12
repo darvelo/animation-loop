@@ -65,8 +65,13 @@ class Animation {
     }
 
     cancel () {
+        if (this.autonomous) {
+            this.cancelRAF();
+        }
+
         this.canceled = true;
-        this.complete();
+        this.completed = true;
+        this._oncomplete();
         return this;
     }
 
