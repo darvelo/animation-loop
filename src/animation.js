@@ -37,11 +37,17 @@ class Animation {
         if (this.autonomous) {
             // prevent launching multiple rafs
             this.cancelRAF();
-            this.rafId = raf(this.cycle.bind(this));
+            this.rafId = raf(this.resume.bind(this));
         }
 
         this.paused = false;
         return this;
+    }
+
+    // use one frame to get deltaT's small enough to animate smoothly
+    resume (now) {
+        this.updateState(now);
+        this.rafId = raf(this.cycle.bind(this));
     }
 
     pause () {
@@ -127,11 +133,7 @@ class Animation {
         // only run animation when the time between frames is short enough.
         // the gap can be wide if the tab becomes inactive, app is switched, etc.
         // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
-        //
-        // if paused, we're now resuming since cycle() is called only by start() and itself.
-        // we need to burn one cycle in order to get the deltaT's small enough to animate smoothly.
-        if (this.paused || this.pauseThreshold && state.deltaT >= this.pauseThreshold) {
-            this.paused = false;
+        if (this.pauseThreshold && state.deltaT >= this.pauseThreshold) {
             return;
         }
 
