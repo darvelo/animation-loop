@@ -37,15 +37,16 @@ class Animation {
         if (this.autonomous) {
             // prevent launching multiple rafs
             this.cancelRAF();
-            this.rafId = raf(this.resume.bind(this));
+            this.rafId = raf(this.burnFrame.bind(this));
         }
 
         this.paused = false;
         return this;
     }
 
-    // use one frame to get deltaT's small enough to animate smoothly
-    resume (now) {
+    // use up one frame to get deltaT's small enough to animate smoothly.
+    // this is needed when the animation has been paused for a while.
+    burnFrame (now) {
         this.updateState(now);
         this.rafId = raf(this.cycle.bind(this));
     }
@@ -141,21 +142,20 @@ class Animation {
             return;
         }
 
-        // must do this first
-        this.updateState(now);
-
         var args = this.args || [];
         // cache for lookups
         var state = this.state;
-
-        // set up another frame
-        this.rafId = raf(this.cycle.bind(this));
+        var deltaT = now - this.lastNow;
 
         // only run animation when the time between frames is short enough.
         // the gap can be wide if the tab becomes inactive, app is switched, etc.
         // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
-        if (this.pauseThreshold && state.deltaT >= this.pauseThreshold) {
+        if (this.pauseThreshold && deltaT >= this.pauseThreshold) {
+            this.rafId = raf(this.burnFrame.bind(this));
             return;
+        } else {
+            this.rafId = raf(this.cycle.bind(this));
+            this.updateState(now);
         }
 
         this.updateProgress();
