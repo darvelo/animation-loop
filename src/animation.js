@@ -124,6 +124,17 @@ class Animation {
         };
     }
 
+    // here we know that the animation will run, so update the runningTime and progress values
+    updateProgress() {
+        var state = this.state;
+
+        state.runningTime += state.deltaT;
+
+        if (this.duration) {
+            state.progress = Math.max(0, Math.min(1, state.runningTime / this.duration));
+        }
+    }
+
     cycle (now) {
         // make sure this method isn't accidentally called
         if (!this.autonomous) {
@@ -147,11 +158,7 @@ class Animation {
             return;
         }
 
-        // now that we know that the animation will run, update the runningTime and progress values
-        state.runningTime += state.deltaT;
-        if (this.duration) {
-            state.progress = Math.max(0, Math.min(1, state.runningTime / this.duration));
-        }
+        this.updateProgress();
 
         if (is(this.before, 'Function')) {
             this.before(...args);
