@@ -120,6 +120,10 @@ class AnimationLoop {
         if (this.remaining === 0) {
             this.completed = true;
 
+            if (!this.autonomous) {
+               this.cancelRAF();
+            }
+
             if (is(this.oncomplete, 'Function')) {
                 this.oncomplete();
             }
