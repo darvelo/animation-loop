@@ -83,14 +83,35 @@ class AnimationLoop {
     start () {
         this.animations.forEach(anim => anim.start());
 
-        if (!this.autonomous && !this.completed) {
+        if (!this.autonomous) {
             // prevent launching multiple rafs
             this.cancelRAF();
-            this.rafId = raf(this.cycle.bind(this));
+            this.rafId = raf(this.burnFrame.bind(this));
             this.paused = false;
         }
 
         return this;
+    }
+
+    // use up one frame to get deltaT's small enough to animate smoothly.
+    // this is needed when the animation has been paused for a while.
+    burnFrame (now) {
+        // make sure this method isn't accidentally called
+        if (this.autonomous || this.remaining === 0) {
+            return;
+        }
+
+        this.updateState(now);
+
+        this.animations.forEach(anim => {
+            if (anim.autonomous || anim.paused || anim.completed || anim.canceled)  {
+                return;
+            }
+
+            anim.updateState(now);
+        });
+
+        this.rafId = raf(this.cycle.bind(this));
     }
 
     pause () {
@@ -131,6 +152,12 @@ class AnimationLoop {
     }
 
     add (options) {
+       // kick off the loop only when it's empty of runnable animations.
+       // this prevents calling anim.start() on animations that are supposed to stay paused.
+       if (!this.autonomous && !this.paused && this.remaining === 0) {
+          this.start();
+       }
+
         var anims = this.createAnimations(options);
         this.animations = this.animations.concat(anims);
         this.remaining += anims.length;
@@ -200,7 +227,69 @@ class AnimationLoop {
         this.trigger('complete');
     }
 
-    cycle (now) {
-        // if animation is autonomous, completed, paused, or canceled, skip over it
+    // keep track of deltaT for the AnimationLoop
+    updateState (now) {
+        this._lastNow = this._lastNow || now;
+        this._deltaT = now - this._lastNow;
+        this._lastNow = now;
     }
+
+    cycle (now) {
+        // make sure this method isn't accidentally called
+        if (this.autonomous || this.remaining === 0) {
+            return;
+        }
+
+        var deltaT = now - this._lastNow;
+        var animations = this.animations;
+
+        // only run animation when the time between frames is short enough.
+        // the gap can be wide if the tab becomes inactive, app is switched, etc.
+        // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
+        if (this.pauseThreshold && deltaT >= this.pauseThreshold) {
+            this.rafId = raf(this.burnFrame.bind(this));
+            return;
+        } else {
+            this.rafId = raf(this.cycle.bind(this));
+            this.updateState(now);
+        }
+
+        // call *all* animation `before()` methods before calling all `render()` methods.
+        // this allows an animation to "clean up" its drawing area before
+        // the space is redrawn by itself or other animations.
+        animations = animations.filter(anim => {
+            if (anim.autonomous || anim.paused || anim.canceled || anim.completed)  {
+                return false;
+            }
+
+            var args = anim.args || [];
+            anim.updateState(now);
+            anim.updateProgress();
+
+            if (is(anim.before, 'Function')) {
+                anim.before(...args);
+            }
+
+            // do not call render() if before() changed the anim's state
+            if (anim.autonomous || anim.paused || anim.canceled || anim.completed)  {
+                return false;
+            }
+
+            return true;
+        });
+
+        animations.forEach(anim => {
+            var args = anim.args || [];
+            anim.render(...args);
+
+            // do not call done() if render() changed the anim's state
+            if (anim.paused || anim.canceled || anim.completed) {
+                return;
+            }
+
+            if (anim.state.progress === 1) {
+                anim.complete();
+            }
+        });
+   }
 }
