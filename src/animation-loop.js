@@ -136,11 +136,6 @@ class AnimationLoop {
         this.remaining += anims.length;
         this.completed = false;
 
-        // start animations as soon as they're added, unless paused
-        if (!this.autonomous && !this.paused) {
-            this.start();
-        }
-
         return anims;
     }
 
