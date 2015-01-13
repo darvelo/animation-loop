@@ -80,10 +80,11 @@ class Animation {
         if (this.autonomous) {
             this.cancelRAF();
 
-            if (is(this.done, 'Function')) {
-                let args = this.args || [];
-                this.done(...args);
-            }
+        }
+
+        if (is(this.done, 'Function')) {
+            let args = this.args || [];
+            this.done(...args);
         }
 
         this.completed = true;
