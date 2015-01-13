@@ -21,7 +21,9 @@ class Animation {
             this.rafId = null;
         }
 
-        this.start();
+        if (!this.paused) {
+            this.start();
+        }
     }
 
     cancelRAF() {
