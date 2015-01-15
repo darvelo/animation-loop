@@ -2,7 +2,7 @@
 
 > Create, start, pause, and cancel animations in the browser the easy way.
 
-# Usage
+# Basic Usage
 
 ```javascript
 /* 
@@ -32,7 +32,8 @@ loop.add({
     duration: 1000,
     args: [box.style],
     render: function (style) {
-        // a value from 0 to 1, indicating how far along in the duration we are, in the current frame.
+        // a value from 0 to 1,
+        // indicating how far along in the duration we are, in the current frame.
         // `this` is the Animation object itself
         var progress = this.state.progress;
 
@@ -43,7 +44,7 @@ loop.add({
         // max distance away from the center
         var sway = center / 2;
 
-        var left = Math.floor(Math.sin(progress * Math.PI * 2 * revolutions) * sway) + center;
+        var left = Math.floor(Math.sin(progress * 2 * Math.PI * revolutions) * sway) + center;
         style.left = left + 'px';
     },
     done: function () {
