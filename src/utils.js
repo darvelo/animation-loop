@@ -11,9 +11,9 @@ function flatten (arr) {
 
     for (let value of arr) {
         if (is(value, 'Array')) {
-            var resLen = result.length;
-            var valLen = value.length;
-            var i = -1;
+            let resLen = result.length;
+            let valLen = value.length;
+            let i = -1;
 
             result.length += valLen;
 
