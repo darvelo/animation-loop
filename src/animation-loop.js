@@ -33,9 +33,11 @@ class AnimationLoop {
       this.pauseThreshold = is(options.pauseThreshold, 'Undefined') ? false : options.pauseThreshold;
    }
 
-   createAnimations(optionsList) {
-      if (not(optionsList, 'Array')) {
-         optionsList = [optionsList];
+   createAnimations (...optionsList) {
+      if (optionsList.length === 0) {
+         return [];
+      } else {
+         optionsList = flatten(optionsList);
       }
 
       return optionsList.map(options => {
@@ -151,17 +153,17 @@ class AnimationLoop {
       }
    }
 
-   add (options) {
+   add (...optionsList) {
       // kick off the loop only when it's empty of runnable animations.
       // this prevents calling anim.start() on animations that are supposed to stay paused.
       if (!this.autonomous && !this.paused && this.remaining === 0) {
          this.start();
       }
 
-      var anims = this.createAnimations(options);
+      var anims = this.createAnimations(...optionsList);
       this.animations = this.animations.concat(anims);
       this.remaining += anims.length;
-      this.completed = false;
+      this.completed = (this.remaining === 0) ? this.completed : false;
 
       return anims;
    }
