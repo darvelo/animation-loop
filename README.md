@@ -30,7 +30,8 @@ loop.add({
     // optional, wait until we manually `.start()` the animation
     paused: true,
     duration: 1000,
-    render: function () {
+    args: [box.style],
+    render: function (style) {
         // a value from 0 to 1, indicating how far along in the duration we are, in the current frame.
         // `this` is the Animation object itself
         var progress = this.state.progress;
@@ -43,12 +44,16 @@ loop.add({
         var sway = center / 2;
 
         var left = Math.floor(Math.sin(progress * Math.PI * 2 * revolutions) * sway) + center;
-        box.style.left = left + 'px';
+        style.left = left + 'px';
     },
     done: function () {
         console.log('box done!', this);
     }
 });
+
+loop.addEventListener('complete', function () {
+    console.log('loop is done!', this === loop);
+}, loop);
 ```
 
 ## Animation creation using just a render function
