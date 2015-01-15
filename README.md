@@ -23,7 +23,7 @@ var loop = new AnimationLoop();
 // tip: all animations can be accessed in the `loop.animations` array.
 ```
 
-## Automatically, using options to create an Animation object
+## Animation creation using options
 
 ```javascript
 loop.add({
@@ -51,7 +51,7 @@ loop.add({
 });
 ```
 
-## Manually, using a function to draw frames without a specific duration
+## Animation creation using just a render function
 
 ```javascript
 loop.add(function () {
