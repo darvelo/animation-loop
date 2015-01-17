@@ -13,8 +13,10 @@ class Animation {
         // timing
         this.startTime = null;
 
-        for (let key of Object.keys(options)) {
-            this[key] = options[key];
+        for (let prop in options) {
+            if (options.hasOwnProperty(prop)) {
+                this[prop] = options[prop];
+            }
         }
 
         if (this.autonomous) {

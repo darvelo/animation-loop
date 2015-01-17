@@ -9,7 +9,7 @@ function not (obj, type) {
 function flatten (arr) {
     var result = [];
 
-    for (let value of arr) {
+    arr.forEach(value => {
         if (is(value, 'Array')) {
             let resLen = result.length;
             let valLen = value.length;
@@ -23,7 +23,7 @@ function flatten (arr) {
         } else {
             result.push(value);
         }
-    }
+    });
 
     return result;
 }

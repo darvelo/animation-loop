@@ -68,11 +68,11 @@ class AnimationLoop {
       }
 
       // only add whitelisted props
-      for (let prop of validProps) {
+      validProps.forEach(prop => {
          if (options.hasOwnProperty(prop) && not(options[prop], 'Undefined')) {
             scrubbed[prop] = options[prop];
          }
-      }
+      });
 
       return scrubbed;
    }
@@ -204,7 +204,8 @@ class AnimationLoop {
       callbacks = this.registry[name] || [];
 
       for (let i = callbacks.length - 1; i >= 0; --i) {
-         let [ cb, cx ] = callbacks[i];
+         let cb = callbacks[i][0];
+         let cx = callbacks[i][1];
 
          if (cb === callback) {
             // make sure ctx is checked if it was passed in.
@@ -219,7 +220,8 @@ class AnimationLoop {
    trigger (name) {
       var callbacks = this.registry[name] || [];
       callbacks.forEach(arr => {
-         var [ func, ctx ] = arr;
+         let func = arr[0];
+         let ctx  = arr[1];
          func.call(ctx);
       });
    }
