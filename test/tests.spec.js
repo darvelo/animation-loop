@@ -1,7 +1,10 @@
-var chai = require('chai');
-var expect = chai.expect;
-var AnimationLoop = require('../.tmp/animation-loop');
+// for running tests in node on the command-line
+if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
+    var chai = require('chai');
+    var AnimationLoop = require('../.tmp/test/node/animation-loop');
+}
 
+var expect = chai.expect;
 chai.should();
 
 describe('AnimationLoop Creation', function () {
