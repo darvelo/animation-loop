@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>AnimationLoop Tests</title>
+        <link rel="stylesheet" href="../node_modules/gulp-mocha/node_modules/mocha/mocha.css" />
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <script src="../node_modules/gulp-mocha/node_modules/mocha/mocha.js"></script>
+        <script src="../node_modules/chai/chai.js"></script>
+        <script>mocha.setup('bdd')</script>
+        <script src="../.tmp/test/browser/animation-loop.js"></script>
+        <script src="tests.spec.js"></script>
+        <script>
+            mocha.checkLeaks();
+            mocha.globals(['AnimationLoop']);
+            mocha.run();
+        </script>
+    </body>
+</html>
