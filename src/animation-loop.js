@@ -74,6 +74,10 @@ class AnimationLoop {
          }
       });
 
+      if (scrubbed.args && not(scrubbed.args, 'Array')) {
+         scrubbed.args = [scrubbed.args];
+      }
+
       return scrubbed;
    }
 
