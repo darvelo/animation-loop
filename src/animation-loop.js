@@ -6,7 +6,6 @@ var validProps = [
    'duration',
    'paused',
    'pauseThreshold',
-   'autonomous',
 ];
 
 class AnimationLoop {
@@ -21,15 +20,8 @@ class AnimationLoop {
       this.remaining = 0;
       this.completed = false;
       this.registry = {};
-
-      // flag that tells animations whether to request their own frames
-      this.autonomous = options.autonomous || false;
-
-      if (!this.autonomous) {
-         this.paused = false;
-         this.rafId = null;
-      }
-
+      this.paused = false;
+      this.rafId = null;
       this.pauseThreshold = is(options.pauseThreshold, 'Undefined') ? false : options.pauseThreshold;
    }
 
@@ -44,7 +36,6 @@ class AnimationLoop {
          // validate properties
          options = this.getScrubbedOptions(options);
          // merge loop's options
-         options.autonomous = options.autonomous || this.autonomous;
          options.pauseThreshold = options.pauseThreshold || this.pauseThreshold;
          // keep track of how many animations have completed
          options._oncomplete = this._animationComplete.bind(this);
@@ -88,14 +79,10 @@ class AnimationLoop {
 
    start () {
       this.animations.forEach(anim => anim.start());
-
-      if (!this.autonomous) {
-         // prevent launching multiple rafs
-         this.cancelRAF();
-         this.rafId = raf(this.burnFrame.bind(this));
-         this.paused = false;
-      }
-
+      // prevent launching multiple rafs
+      this.cancelRAF();
+      this.rafId = raf(this.burnFrame.bind(this));
+      this.paused = false;
       return this;
    }
 
@@ -103,14 +90,14 @@ class AnimationLoop {
    // this is needed when the animation has been paused for a while.
    burnFrame (now) {
       // make sure this method isn't accidentally called
-      if (this.autonomous || this.remaining === 0) {
+      if (this.remaining === 0) {
          return;
       }
 
       this.updateState(now);
 
       this.animations.forEach(anim => {
-         if (anim.autonomous || anim.paused || anim.completed || anim.canceled)  {
+         if (anim.paused || anim.completed || anim.canceled)  {
             return;
          }
 
@@ -122,22 +109,14 @@ class AnimationLoop {
 
    pause () {
       this.animations.forEach(anim => anim.pause());
-
-      if (!this.autonomous) {
-         this.cancelRAF();
-         this.paused = true;
-      }
-
+      this.cancelRAF();
+      this.paused = true;
       return this;
    }
 
    cancel () {
       this.animations.forEach(anim => anim.cancel());
-
-      if (this.autonomous) {
-         this.cancelRAF();
-      }
-
+      this.cancelRAF();
       return this;
    }
 
@@ -146,10 +125,7 @@ class AnimationLoop {
 
       if (this.remaining === 0) {
          this.completed = true;
-
-         if (!this.autonomous) {
-            this.cancelRAF();
-         }
+         this.cancelRAF();
 
          if (is(this.oncomplete, 'Function')) {
             this.oncomplete();
@@ -160,7 +136,7 @@ class AnimationLoop {
    add (...optionsList) {
       // kick off the loop only when it's empty of runnable animations.
       // this prevents calling anim.start() on animations that are supposed to stay paused.
-      if (!this.autonomous && !this.paused && this.remaining === 0) {
+      if (!this.paused && this.remaining === 0) {
          this.start();
       }
 
@@ -244,7 +220,7 @@ class AnimationLoop {
 
    cycle (now) {
       // make sure this method isn't accidentally called
-      if (this.autonomous || this.remaining === 0) {
+      if (this.remaining === 0) {
          return;
       }
 
@@ -266,7 +242,7 @@ class AnimationLoop {
       // this allows an animation to "clean up" its drawing area before
       // the space is redrawn by itself or other animations.
       animations = animations.filter(anim => {
-         if (anim.autonomous || anim.paused || anim.canceled || anim.completed)  {
+         if (anim.paused || anim.canceled || anim.completed)  {
             return false;
          }
 
@@ -279,7 +255,7 @@ class AnimationLoop {
          }
 
          // do not call render() if before() changed the anim's state
-         if (anim.autonomous || anim.paused || anim.canceled || anim.completed)  {
+         if (anim.paused || anim.canceled || anim.completed)  {
             return false;
          }
 

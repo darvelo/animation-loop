@@ -8,7 +8,6 @@ class Animation {
         this.canceled = false;
         this.completed = false;
         this.paused = false;
-        this.autonomous = false;
 
         // timing
         this.startTime = null;
@@ -19,18 +18,9 @@ class Animation {
             }
         }
 
-        if (this.autonomous) {
-            this.rafId = null;
-        }
-
         if (!this.paused) {
             this.start();
         }
-    }
-
-    cancelRAF() {
-        caf(this.rafId);
-        this.rafId = null;
     }
 
     start () {
@@ -38,21 +28,8 @@ class Animation {
             return this;
         }
 
-        if (this.autonomous) {
-            // prevent launching multiple rafs
-            this.cancelRAF();
-            this.rafId = raf(this.burnFrame.bind(this));
-        }
-
         this.paused = false;
         return this;
-    }
-
-    // use up one frame to get deltaT's small enough to animate smoothly.
-    // this is needed when the animation has been paused for a while.
-    burnFrame (now) {
-        this.updateState(now);
-        this.rafId = raf(this.cycle.bind(this));
     }
 
     pause () {
@@ -61,19 +38,11 @@ class Animation {
             return this;
         }
 
-        if (this.autonomous) {
-            this.cancelRAF();
-        }
-
         this.paused = true;
         return this;
     }
 
     cancel () {
-        if (this.autonomous) {
-            this.cancelRAF();
-        }
-
         this.canceled = true;
         this.completed = true;
         this._oncomplete();
@@ -81,11 +50,6 @@ class Animation {
     }
 
     complete () {
-        if (this.autonomous) {
-            this.cancelRAF();
-
-        }
-
         if (is(this.done, 'Function')) {
             let args = this.args || [];
             this.done(...args);
@@ -138,51 +102,6 @@ class Animation {
 
         if (this.duration) {
             state.progress = Math.max(0, Math.min(1, state.runningTime / this.duration));
-        }
-    }
-
-    cycle (now) {
-        // make sure this method isn't accidentally called
-        if (!this.autonomous) {
-            return;
-        }
-
-        var args = this.args || [];
-        // cache for lookups
-        var state = this.state;
-        var deltaT = now - this.lastNow;
-
-        // only run animation when the time between frames is short enough.
-        // the gap can be wide if the tab becomes inactive, app is switched, etc.
-        // ref: hacks.mozilla.org/2011/08/animating-with-javascript-from-setinterval-to-requestanimationframe/
-        if (this.pauseThreshold && deltaT >= this.pauseThreshold) {
-            this.rafId = raf(this.burnFrame.bind(this));
-            return;
-        } else {
-            this.rafId = raf(this.cycle.bind(this));
-            this.updateState(now);
-        }
-
-        this.updateProgress();
-
-        if (is(this.before, 'Function')) {
-            this.before(...args);
-        }
-
-        // do not call render() if the animation state changed in before()
-        if (this.paused || this.canceled || this.completed) {
-            return;
-        }
-
-        this.render(...args);
-
-        // do not call done() if the animation state changed in render()
-        if (this.paused || this.canceled || this.completed) {
-            return;
-        }
-
-        if (state.progress === 1) {
-            this.complete();
         }
     }
 }
